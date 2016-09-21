@@ -1,0 +1,15 @@
+elpa
+auto-save-list
+eshell
+.DS_Store
+.session
+.emacs.desktop*
+*~
+projectile*
+tramp
+ac-comphist.dat
+ido.last
+url
+smex-items
+recentf
+bookmarks

@@ -1,0 +1,340 @@
+#!lisp (-)
+
+;; 窗口位置、大小
+(set-frame-position (selected-frame) 380 60)
+;(set-frame-width (selected-frame) 110)
+;(set-frame-height (selected-frame) 33)
+
+;; 设置HOME
+(setenv "HOME" "d:\\cygwin\\home\\zhujie\\")
+;; 修复由于修改HOME之后，无法打开c:\Users\zhujie.zhujie-PC\AppData\Roaming目录下文件的问题
+(setq abbreviated-home-dir "\\`d:/cygwin/home/zhujie\\(/\\|\\'\\)")
+
+(setenv "PATH" (concat "d:\\cygwin\\home\\zhujie\\bin;d:\\cygwin\\bin;" ";d:\\Program Files (x86)\\emacs\\bin" (getenv "PATH") ))
+(setq exec-path (append '("d:\\cygwin\\home\\zhujie\\bin" "d:\\cygwin\\bin" "d:\\Program Files (x86)\\emacs\\bin") exec-path ))
+(setq default-directory "e:/tmp" )
+
+;设置el路径
+;(setq lib-path "~/.emacs.d/el")
+;(add-to-list 'load-path lib-path)
+
+;; emacs server
+(server-start)
+
+;(require 'ido)
+;(ido-mode t)
+
+(load "desktop")
+;; 在退出时自动执行desktop-save
+(desktop-save-mode 1)
+;; 退出时不提示自动保存desktop
+(desktop-load-default)
+;; 不保存tramp路径，否则会导致点击菜单时也连tramp服务器
+(setq desktop-files-not-to-save "^$")
+;; re-builder 默认使用 string 模式，减少些 \
+(require 're-builder)
+(setq reb-re-syntax 'string)
+
+
+;; package系统
+(require 'package)
+(add-to-list 'package-archives '("marmalade"
+				 . "http://marmalade-repo.org/packages/"))
+(add-to-list 'package-archives '("melpa"
+				 . "http://melpa.milkbox.net/packages/"))
+(add-to-list 'package-archives
+             '("elpy" . "http://jorgenschaefer.github.io/packages/"))
+(package-initialize)
+
+(defvar my-packages
+  '(cider
+    clojure-mode
+    smex
+    ;multi-web-mode
+    web-mode
+    yasnippet
+    php-mode
+    go-mode
+    auto-complete
+    pos-tip
+    popup
+    auto-complete-nxml
+    session
+    muse
+    ecb
+    scala-mode2
+    js2-mode
+    ensime
+    markdown-mode
+    multiple-cursors
+    visual-regexp
+    ;cygwin-mount
+    dirtree
+    color-theme))
+(dolist (p my-packages)
+  (when (not (package-installed-p p))
+    (package-install p)))
+
+;; 重用dired缓冲区
+(require 'dired-x)
+(toggle-diredp-find-file-reuse-dir 1)
+
+
+(global-set-key (kbd "M-x") 'smex)
+
+;; cider
+(defun remove-dos-eol ()
+  "Do not show ^M in files containing mixed UNIX and DOS line endings."
+  (interactive)
+  (setq buffer-display-table (make-display-table))
+  (aset buffer-display-table ?\^M []))
+
+(add-hook 'nrepl-mode-hook 'remove-dos-eol)
+
+;(require 'ecb)
+;(setq ecb-auto-activate t
+;      ecb-tip-of-the-day nil)
+
+;; visual-regexp
+;(require 'visual-regexp)
+;(define-key global-map (kbd "C-c r") 'vr/replace)
+;(define-key global-map (kbd "C-c q") 'vr/query-replace)
+;; if you use multiple-cursors, this is for you:
+;(define-key global-map (kbd "C-c m") 'vr/mc-mark)
+
+;; 禁用package系统
+;(setq package-enable-at-startup nil)
+
+;; multiple-cursors
+(require 'multiple-cursors)
+(global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+(global-set-key (kbd "C->") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+
+;; js2-mode
+(add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
+
+
+;; cygwin-mount
+;(require 'cygwin-mount)
+;(cygwin-mount-activate)
+
+;; cygwin as shell
+;(setq binary-process-input t) 
+;(setq w32-quote-process-args ?\") 
+(setq shell-file-name "bash") ;; or sh if you rename your bash executable to sh. 
+(setenv "SHELL" shell-file-name) 
+(setq explicit-shell-file-name shell-file-name) 
+(setq explicit-sh-args '("-login" "-i"))
+;put this line to ~/.emacs_bash 
+;export PS1="\e[0;31m[\u@\h \W]\$ \e[m "
+
+(require 'session)
+(add-hook 'after-init-hook 'session-initialize)
+
+;; slime
+;; 不要通过emacs package功能来安装slime
+;; 直接使用quicklisp提供的slime，否则会出现slime与swank版本不一致 
+;(setq inferior-lisp-program "sbcl")
+(setq inferior-lisp-program "wx86cl")
+;(require 'slime)
+(load (expand-file-name "~/quicklisp/slime-helper.el"))
+;(slime-setup '(slime-fancy))
+(setq common-lisp-hyperspec-root "file:///D:/Lisp/LispWorks%20Personal/lib/6-0-0-0/manual/online/web/CLHS/")
+
+;; org
+(setq org-agenda-files '("e:/devel/docs/org/gtd/index.org"
+			 "e:/devel/docs/org/gtd/dev.org"
+			 "e:/devel/docs/org/gtd/self.org"))
+(setq org-todo-keywords
+      '((sequence "TODO(t)" "DOING(i!)" "HANGUP(h!)" "|" "DONE(d!)" "CANCEL(c!)")))
+(global-set-key "\C-cal" 'org-agenda)
+(setq note-root-dir "e:/devel/docs/org/pages")
+(setq note-publish-dir "e:/devel/docs/org/publish_html")
+
+(setq org-publish-project-alist
+      `(("note-org"
+         :base-directory ,note-root-dir
+         :publishing-directory ,note-publish-dir
+         :base-extension "org"
+         :recursive t
+         :publishing-function org-publish-org-to-html
+         :auto-index t
+	 :auto-sitemap t
+         :index-filename "index.org"
+         :index-title "index"
+         :link-home "index.html")
+        ("note-static"
+         :base-directory ,note-root-dir
+         :publishing-directory ,note-publish-dir
+         :recursive t
+         :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|swf\\|zip\\|gz\\|txt\\|el"
+         :publishing-function org-publish-attachment)
+        ("note" :components ("note-org" "note-static"))))
+
+;; python开发环境
+;; elpy
+;(elpy-enable)
+;(add-hook 'python-mode-hook 'jedi:setup)
+;(setq jedi:complete-on-dot t)
+
+;; ensime
+;;(add-to-list 'load-path "d:/Java/ensime/elisp")
+;(require 'ensime)
+;(add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
+
+;; cedet
+;(load-file "~/.emacs.d/emacs-cedet.el")
+
+;; jdee
+;;(setq jde-help-remote-file-exists-function '("beanshell"))
+;(add-to-list 'load-path "~/.emacs.d/el/jdee-2.4.1/lisp")
+;(load "jde")
+
+;; nxhtml
+;(add-to-list 'load-path "~/.emacs.d/el/nxhtml")
+;(load "~/.emacs.d/el/nxhtml/autostart.el")
+
+
+;; yasnippet
+(require 'yasnippet)
+(yas-global-mode 1)
+(yas-minor-mode-on)
+;(yas-load-directory (concat lib-path "/yasnippet/snippets"))
+;(global-set-key "\C-cay" 'yas-insert-snippet)
+
+;; auto complete
+(require 'auto-complete)
+(require 'go-autocomplete)
+(require 'auto-complete-config)
+;(require 'go-mode-load)
+(global-auto-complete-mode t)
+;(setq ac-auto-show-menu 0.8)
+;(setq ac-delay 0.1)
+(ac-config-default)
+
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(ac-auto-show-menu 0.8)
+ '(ac-auto-start nil)
+ '(ac-delay 0.1)
+ '(ac-quick-help-delay 1.0)
+ '(ac-trigger-key "TAB")
+ '(ac-use-menu-map t)
+ '(ac-use-quick-help t)
+ '(column-number-mode t)
+ '(company-auto-complete t)
+ '(current-language-environment "Chinese-GBK")
+ '(electric-pair-mode t)
+ '(elpy-rpc-backend nil)
+ '(font-lock-maximum-decoration (quote ((sqlplus-mode . 1)))) ;防止Sqlplus读取系统表
+ '(grep-command "grep -RanH --exclude-dir=\".svn\" --exclude-dir=\".git\"")
+ '(grep-find-command (quote ("find . -type f -print |xargs grep -anH " . 39)))
+ '(markdown-command "pandoc -s -S --toc -f markdown -t html --highlight-style=espresso -c http://johnmacfarlane.net/pandoc/demo/pandoc.css")
+ '(markdown-command-needs-filename t)
+ '(pandoc-pub-command "pandoc -s -S --toc -f markdown --highlight-style=espresso -H e:/devel/docs/markdown/src/pandoc.header")
+ '(scala-mode-feature:electric-on-per-default t)
+ '(session-use-package t nil (session))
+ '(show-paren-mode t)
+ '(tool-bar-mode nil))
+
+(require 'pos-tip)
+(setq ac-quick-help-prefer-pos-tip t)   ;default is t
+
+
+;; color-theme
+(require 'color-theme)
+(setq color-theme-is-global t)
+(color-theme-initialize)
+(color-theme-robin-hood)
+
+
+;; multi-web-mode
+;; (require 'multi-web-mode)
+;; (setq mweb-default-major-mode 'html-mode)
+;; (setq mweb-tags '((php-mode "<\\?php\\|<\\? \\|<\\?=" "\\?>")
+;; 		  (java-mode "<%" "%>")
+;;                   (js2-minor-mode "<script *\\(type=\"text/javascript\"\\|language=\"javascript\"\\)[^>]*>" "</script>")
+;; 		  (js2-minor-mode "<script>" "</script>")
+;; 		  (jsx-mode "<script +\\(type=\"text/jsx\"\\)[^>]*>" "</script>")
+;;                   (css-mode "<style +type=\"text/css\"[^>]*>" "</style>")))
+;; (setq mweb-filename-extensions '("php" "htm" "html" "ctp" "phtml" "php4" "php5" "jsp"))
+;; (multi-web-global-mode )
+
+;; (require 'jsx-mode)
+;; (add-to-list 'auto-mode-alist '("\\.jsx\\'" . jsx-mode))
+
+
+;; web-mode
+(require 'web-mode)
+(add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.htm\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.[gj]sp\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
+;(setq web-mode-markup-indent-offset 2)
+
+;(require 'php-mode)
+(add-hook 'php-mode-hook
+     '(lambda () (define-abbrev php-mode-abbrev-table "ex" "extends")))
+
+;; muse
+(load-file "~/.emacs.d/emacs-muse.el")
+
+;; markdown
+;; Load markdown-mode
+(autoload 'markdown-mode "markdown-mode"
+   "Major mode for editing Markdown files" t)
+;(add-to-list 'auto-mode-alist '("\\.text\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+(load-file "e:/devel/elisp/pandoc-pub.el")
+(add-hook 'markdown-mode-hook
+	  (lambda ()
+	    (define-key markdown-mode-map (kbd "C-c C-c v") 'pandoc-pub-single)
+	    (auto-complete-mode)))
+
+;; other settins
+(load-file "~/.emacs.d/emacs-settings.el")
+
+;; 加载键盘宏
+;(load-file "~/.emacs.d/kbd-macro.el")
+
+;; 根据文件名规则自动设置为utf-8编码
+(add-hook 'find-file-hooks
+	  (lambda ()
+	    (if (not (string-match-p ;默认是utf编码的不处理
+		      "utf"
+		      (symbol-name buffer-file-coding-system))) 
+		(let ((match-exprs '(".md"	;markdown文件
+				     ".git/COMMIT_EDITMSG" ;git日志
+				     ))
+		      (file-name (or buffer-file-name ""))
+		      (unmatch-flag 1)
+		      match-expr)
+		  (while (and unmatch-flag match-exprs)
+		    (setq match-expr (pop match-exprs))
+		    (when (string-match-p match-expr file-name)
+		      (message "已将文件编码设置为utf-8")
+		      (set-buffer-file-coding-system 'utf-8)
+		      (setq unmatch-flag nil)
+		      ))))))
+
+;(setq dabbrev-abbrev-char-regexp "[a-z1-9]")
+
+
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )

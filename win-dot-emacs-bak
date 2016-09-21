@@ -1,0 +1,147 @@
+#!lisp (-)
+
+;; 设置HOME
+(setenv "HOME" "d:\\Program Files (x86)\\cygwin\\home\\zhujie\\")
+
+;设置el路径
+(setq lib-path "~/.emacs.d/el")
+(add-to-list 'load-path lib-path)
+
+;;abbrev
+;; (setq-default abbrev-mode t)
+;; (read-abbrev-file "~/.abbrev_defs")
+;; (setq save-abbrevs t)
+
+;; emacs server
+(server-start)
+
+;(load "desktop")
+;; 在退出时自动执行desktop-save
+;(desktop-save-mode 1)
+;; 退出时不提示自动保存desktop
+;(desktop-load-default)
+
+(require 'session)
+(add-hook 'after-init-hook 'session-initialize)
+
+;; mmm-mode
+(load-file "~/.emacs.d/emacs-mmm.el")
+
+;; org
+(setq org-agenda-files '("e:/devel/docs/org/gtd/index.org"
+			 "e:/devel/docs/org/gtd/dev.org"
+			 "e:/devel/docs/org/gtd/self.org"))
+(setq org-todo-keywords
+      '((sequence "TODO(t)" "DOING(i!)" "HANGUP(h!)" "|" "DONE(d!)" "CANCEL(c!)")))
+(global-set-key "\C-cal" 'org-agenda)
+(setq note-root-dir "e:/devel/docs/org/pages")
+(setq note-publish-dir "e:/devel/docs/org/publish_html")
+
+(setq org-publish-project-alist
+      `(("note-org"
+         :base-directory ,note-root-dir
+         :publishing-directory ,note-publish-dir
+         :base-extension "org"
+         :recursive t
+         :publishing-function org-publish-org-to-html
+         :auto-index t
+	 :auto-sitemap t
+         :index-filename "index.org"
+         :index-title "index"
+         :link-home "index.html")
+        ("note-static"
+         :base-directory ,note-root-dir
+         :publishing-directory ,note-publish-dir
+         :recursive t
+         :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|swf\\|zip\\|gz\\|txt\\|el"
+         :publishing-function org-publish-attachment)
+        ("note" :components ("note-org" "note-static"))))
+
+
+;; muse
+(load-file "~/.emacs.d/emacs-muse.el")
+
+;; scala-mode
+(add-to-list 'load-path "d:/java/scala-2.9.1.final/misc/scala-tool-support/emacs")
+(require 'scala-mode-auto)
+
+;; ensime
+;(add-to-list 'load-path "d:/Java/ensime/elisp")
+;(require 'ensime)
+;(add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
+
+;; slime
+(setq inferior-lisp-program "sbcl")
+(add-to-list 'load-path "~/.emacs.d/el/slime")
+(require 'slime)
+(slime-setup '(slime-fancy))
+(setq common-lisp-hyperspec-root "file:///D:/Lisp/LispWorks%20Personal/lib/6-0-0-0/manual/online/web/CLHS/")
+
+;; cedet
+;(load-file "~/.emacs.d/emacs-cedet.el")
+
+
+;; yasnippet
+(add-to-list 'load-path (concat lib-path "/yasnippet"))
+(require 'yasnippet)
+(yas/initialize)
+(yas/load-directory (concat lib-path "/yasnippet/snippets"))
+(global-set-key "\C-cay" 'yas/insert-snippet)
+
+;; autocomplete
+;(load-file "~/.emacs.d/emacs-ac.el")
+
+;; color-theme
+(add-to-list 'load-path (concat lib-path "/color-theme"))
+(require 'color-theme)
+;(setq color-theme-is-global t)
+(color-theme-initialize)
+(color-theme-robin-hood)
+
+;; groovy grails
+;(require 'groovy-mode)
+;(require 'grails-mode)
+
+;; package
+;(require 'package)
+;(add-to-list 'package-archives
+;	     '("marmalade" . "http://marmalade-repo.org/packages/"))
+
+;; clojure mode
+(add-to-list 'load-path (concat lib-path "/clojure-mode"))
+(require 'clojure-mode)
+
+
+;; other settins
+(load-file "~/.emacs.d/emacs-settings.el")
+
+;; 从cygwin中的git编辑日志时将编码设置为utf-8
+(add-hook 'find-file-hooks
+	  (lambda ()
+	    (if (numberp (string-match
+			  ".git/COMMIT_EDITMSG"
+			  (or buffer-file-name "")))
+		(progn
+		  (message "已将Git注释设置编码为utf-8")
+		  (set-buffer-file-coding-system 'utf-8)))))
+
+;(setq dabbrev-abbrev-char-regexp "[a-z1-9]")
+
+
+(custom-set-variables
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(column-number-mode t)
+ '(current-language-environment "Chinese-GBK")
+ '(scala-mode-feature:electric-on-per-default t)
+ '(show-paren-mode t)
+ '(tool-bar-mode nil))
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ )
+
