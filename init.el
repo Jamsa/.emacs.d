@@ -32,25 +32,7 @@
 ;             '("elpy" . "http://jorgenschaefer.github.io/packages/")) ;elpy环境
 (package-initialize)
 
-(defvar my-packages
-  '(web-mode
-    yasnippet
-    session
-    auto-complete
-    scala-mode2
-    js2-mode
-    helm
-    helm-projectile
-    markdown-mode
-    htmlize
-    ace-jump-mode
-    ace-window
-    ace-jump-zap
-    eshell-z
-    ))
-(dolist (p my-packages)
-  (when (not (package-installed-p p))
-    (package-install p)))
+
 
 ;; smex
 ;;(require 'smex)
@@ -122,6 +104,7 @@
 (setq web-mode-code-indent-offset 4)
 (setq web-mode-indent-style 4)
 
+;;(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-jsx-mode))
 (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-jsx-mode))
 (setq js-indent-level 2)
 (setq js2-basic-offset 2)
@@ -133,29 +116,39 @@
 ;(yas-load-directory (concat lib-path "/yasnippet/snippets"))
 ;(global-set-key "\C-cay" 'yas-insert-snippet)
 
-;; auto complete
-(require 'auto-complete)
-;(require 'go-autocomplete)
-(require 'auto-complete-config)
-(require 'ac-dabbrev)
-(require 'ac-html)
-(require 'ac-js2)
-;;(require 'go-mode-load)
-(global-auto-complete-mode t)
-;;(setq ac-auto-show-menu 0.8)
-;;(setq ac-delay 0.1)
-(ac-config-default)
-(setq-default ac-sources (push 'ac-source-yasnippet ac-sources))
-(setq-default ac-sources (push 'ac-source-dabbrev ac-sources))
+;; company
+(add-hook 'after-init-hook 'global-company-mode)
+(company-quickhelp-mode 1)
+(setq company-tooltip-limit 20)                      ; bigger popup window
+(setq company-tooltip-align-annotations 't)          ; align annotations to the right tooltip border
+(setq company-idle-delay .3)                         ; decrease delay before autocompletion popup shows
+(setq company-begin-commands '(self-insert-command)) ; start autocompletion only after typing
 
-(add-hook 'js2-mode-hook 'ac-js2-mode)
-(add-to-list 'web-mode-ac-sources-alist
-             '(("html" . (ac-source-css-property
-                          ac-source-html-tag
-                          ac-source-html-attr
-                          ac-source-html-attrv))
-               ("css" . (ac-source-css-property
-                         ))))
+(with-eval-after-load 'company
+  (define-key company-active-map (kbd "M-n") nil)
+  (define-key company-active-map (kbd "M-p") nil)
+  (define-key company-active-map (kbd "C-n") #'company-select-next)
+  (define-key company-active-map (kbd "C-p") #'company-select-previous))
+(require 'company-web-html)
+(require 'company-dict)
+(push 'company-dict company-backends)
+(push 'company-web-html company-backends)
+;;(add-hook 'web-mode-hook (lambda ()
+;;                          (set (make-local-variable 'company-backends) '(company-web-html))
+;;                          (company-mode t)))
+
+(defvar company-mode/enable-yas t
+  "Enable yasnippet for all backends.")
+(defun company-mode/backend-with-yas (backend)
+  (if (or (not company-mode/enable-yas) (and (listp backend) (member 'company-yasnippet backend)))
+      backend
+    (append (if (consp backend) backend (list backend))
+            '(:with company-yasnippet))))
+(setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
+
+
+;;python-mode
+(setq python-indent-offset 4)
 
 ;; org-mode
 (require 'ox-html)
@@ -315,7 +308,7 @@
    "pandoc -s --include-in-header=/Users/zhujie/Documents/devel/docs/markdown/src/pandoc.header -c http://johnmacfarlane.net/pandoc/demo/pandoc.css")
  '(package-selected-packages
    (quote
-    (ac-dabbrev ac-html ac-js2 xterm-color eshell-z ace-jump-zap ace-window ace-jump-mode 2048-game typescript-mode yasnippet web-mode sqlplus session scala-mode2 markdown-mode js2-mode htmlize helm-projectile dash color-theme-solarized auto-complete)))
+    (company company-dict company-quickhelp company-web scala-mode xterm-color eshell-z ace-jump-zap ace-window ace-jump-mode 2048-game typescript-mode yasnippet web-mode sqlplus session markdown-mode js2-mode htmlize helm-projectile dash color-theme-solarized)))
  '(session-use-package t nil (session)))
 
 (custom-set-faces
