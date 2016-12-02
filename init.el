@@ -6,14 +6,21 @@
 (setenv "PATH" (concat "/opt/oracle:" (getenv "PATH")))
 (setq exec-path (append '("/opt/oracle") exec-path ))
 (setenv "NLS_LANG" "SIMPLIFIED CHINESE_CHINA.UTF8")
+(setenv "TERM" "xterm-256color")
 
-;; shift-space 
-(global-set-key [?\S- ] 'set-mark-command)
+;; initial window
+(setq initial-frame-alist
+      '(
+        (width . 102) ; character
+        (height . 45) ; lines
+        ))
 
-(setq tab-width 4)
-(setq-default indent-tabs-mode nil)
-
-(server-start)
+;; default/sebsequent window
+(setq default-frame-alist
+      '(
+        (width . 100) ; character
+        (height . 45) ; lines
+        ))
 
 ;; package系统
 (require 'package)
@@ -21,8 +28,8 @@
 				 . "http://marmalade-repo.org/packages/")) ;包数量更多
 (add-to-list 'package-archives '("melpa"
 				 . "http://melpa.milkbox.net/packages/")) ;有大多数的包，每日更新
-(add-to-list 'package-archives
-             '("elpy" . "http://jorgenschaefer.github.io/packages/")) ;elpy环境
+;(add-to-list 'package-archives
+;             '("elpy" . "http://jorgenschaefer.github.io/packages/")) ;elpy环境
 (package-initialize)
 
 (defvar my-packages
@@ -36,6 +43,10 @@
     helm-projectile
     markdown-mode
     htmlize
+    ace-jump-mode
+    ace-window
+    ace-jump-zap
+    eshell-z
     ))
 (dolist (p my-packages)
   (when (not (package-installed-p p))
@@ -44,6 +55,17 @@
 ;; smex
 ;;(require 'smex)
 ;;(global-set-key (kbd "M-x") 'smex)
+
+;; buffer切换
+(global-set-key (kbd "M-s-<left>") 'previous-buffer)
+(global-set-key (kbd "M-s-<right>") 'next-buffer)
+
+;;ace
+(global-set-key (kbd "C-x o") 'ace-window)
+(global-set-key (kbd "M-z") 'ace-jump-zap-to-char)
+(global-set-key (kbd "C-x j") 'ace-jump-word-mode)
+;;(global-set-key (kbd "C-x b") 'ace-jump-buffer)
+;;(global-set-key (kbd "C-s") 'isearch-forward)
 
 ;helm-mode
 (require 'helm-config)
@@ -72,10 +94,13 @@
 (setq projectile-enable-caching t)
 (setq projectile-completion-system 'helm)
 (helm-projectile-on) ;依赖于ack，mac上需要brew install ack
+(setq projectile-globally-ignored-files '("TAGS" "node_modules" "*.~undo-tree~" ".git" ".svn"))
 
 ;; markdown-mode
+(require 'markdown-mode)
 (add-to-list 'auto-mode-alist '("\\.markdown\\'". markdown-mode))
 (add-to-list 'auto-mode-alist '("\\.md\\'". markdown-mode))
+(markdown-toggle-math t)                ;启用对mathjax的支持
 
 ; web-mode
 (require 'web-mode)
@@ -88,27 +113,18 @@
 (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
-                                        ;(setq web-mode-markup-indent-offset 2)
+;;(add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.css\\'" . web-mode))
+;;(setq web-mode-markup-indent-offset 2)
 
 (setq web-mode-markup-indent-offset 4)
 (setq web-mode-css-indent-offset 4)
 (setq web-mode-code-indent-offset 4)
 (setq web-mode-indent-style 4)
 
-(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-jsx-mode))
 (setq js-indent-level 2)
 (setq js2-basic-offset 2)
-
-;; auto complete
-(require 'auto-complete)
-;(require 'go-autocomplete)
-(require 'auto-complete-config)
-;(require 'go-mode-load)
-(global-auto-complete-mode t)
-;(setq ac-auto-show-menu 0.8)
-;(setq ac-delay 0.1)
-(ac-config-default)
 
 ;; yasnippet
 (require 'yasnippet)
@@ -116,6 +132,30 @@
 (yas-minor-mode-on)
 ;(yas-load-directory (concat lib-path "/yasnippet/snippets"))
 ;(global-set-key "\C-cay" 'yas-insert-snippet)
+
+;; auto complete
+(require 'auto-complete)
+;(require 'go-autocomplete)
+(require 'auto-complete-config)
+(require 'ac-dabbrev)
+(require 'ac-html)
+(require 'ac-js2)
+;;(require 'go-mode-load)
+(global-auto-complete-mode t)
+;;(setq ac-auto-show-menu 0.8)
+;;(setq ac-delay 0.1)
+(ac-config-default)
+(setq-default ac-sources (push 'ac-source-yasnippet ac-sources))
+(setq-default ac-sources (push 'ac-source-dabbrev ac-sources))
+
+(add-hook 'js2-mode-hook 'ac-js2-mode)
+(add-to-list 'web-mode-ac-sources-alist
+             '(("html" . (ac-source-css-property
+                          ac-source-html-tag
+                          ac-source-html-attr
+                          ac-source-html-attrv))
+               ("css" . (ac-source-css-property
+                         ))))
 
 ;; org-mode
 (require 'ox-html)
@@ -158,7 +198,6 @@
         ("blog" :components ("blog-notes","blog-static"))
         ))
 
-
 ;; 其它设置
 (desktop-save-mode t)
 
@@ -167,35 +206,29 @@
 
 ;; theme
 (load-theme 'wombat t)
+;;(load-theme 'zenburn-theme t)
+
+;;eshell
+(require 'eshell)
+(require 'eshell-z)
+;; 256色显示
+(require 'xterm-color)
+;; comint install
+;;(progn (add-hook 'comint-preoutput-filter-functions 'xterm-color-filter)
+;;       (setq comint-output-filter-functions (remove 'ansi-color-process-output comint-output-filter-functions)))
+;; comint uninstall
+;;(progn (remove-hook 'comint-preoutput-filter-functions 'xterm-color-filter)
+;;       (add-to-list 'comint-output-filter-functions 'ansi-color-process-output))
+(add-hook 'eshell-mode-hook
+          (lambda ()
+            (setq xterm-color-preserve-properties t)))
+(add-to-list 'eshell-preoutput-filter-functions 'xterm-color-filter)
+(setq eshell-output-filter-functions (remove 'eshell-handle-ansi-color eshell-output-filter-functions))
 
 
-;; source: http://steve.yegge.googlepages.com/my-dot-emacs-file
-(defun rename-file-and-buffer (new-name)
-  "Renames both current buffer and file it's visiting to NEW-NAME."
-  (interactive "sNew name: ")
-  (let ((name (buffer-name))
-        (filename (buffer-file-name)))
-    (if (not filename)
-        (message "Buffer '%s' is not visiting a file!" name)
-      (if (get-buffer new-name)
-          (message "A buffer named '%s' already exists!" new-name)
-        (progn
-          (rename-file name new-name 1)
-          (rename-buffer new-name)
-          (set-visited-file-name new-name)
-          (set-buffer-modified-p nil))))))
+;(setq helm-locate-command "mdfind -name %s %s")
+;(setq helm-locate-fuzzy-match nil)
 
-(defun delete-file-and-buffer ()
-  "Kill the current buffer and deletes the file it is visiting."
-  (interactive)
-  (let ((filename (buffer-file-name)))
-    (when filename
-      (if (vc-backend filename)
-          (vc-delete-file filename)
-        (progn
-          (delete-file filename)
-          (message "Deleted file %s" filename)
-          (kill-buffer))))))
 
 ;; 全局设置
 ;; 字体
@@ -235,22 +268,56 @@
 (tool-bar-mode 0)
 ;; 不显示滚动条
 (scroll-bar-mode -1)
+;; 显示行号
+(global-linum-mode 0)
+;; shift-space 
+;(global-set-key [?\S- ] 'set-mark-command)
+
+(setq tab-width 4)
+(setq-default indent-tabs-mode nil)
+
+(server-start)
+
+;; source: http://steve.yegge.googlepages.com/my-dot-emacs-file
+(defun rename-file-and-buffer (new-name)
+  "Renames both current buffer and file it's visiting to NEW-NAME."
+  (interactive "sNew name: ")
+  (let ((name (buffer-name))
+        (filename (buffer-file-name)))
+    (if (not filename)
+        (message "Buffer '%s' is not visiting a file!" name)
+      (if (get-buffer new-name)
+          (message "A buffer named '%s' already exists!" new-name)
+        (progn
+          (rename-file name new-name 1)
+          (rename-buffer new-name)
+          (set-visited-file-name new-name)
+          (set-buffer-modified-p nil))))))
+
+(defun delete-file-and-buffer ()
+  "Kill the current buffer and deletes the file it is visiting."
+  (interactive)
+  (let ((filename (buffer-file-name)))
+    (when filename
+      (if (vc-backend filename)
+          (vc-delete-file filename)
+        (progn
+          (delete-file filename)
+          (message "Deleted file %s" filename)
+          (kill-buffer))))))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(column-number-mode t)
- '(custom-safe-themes
-   (quote
-    ("8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" default)))
- '(display-time-mode t)
  '(markdown-command
    "pandoc -s --include-in-header=/Users/zhujie/Documents/devel/docs/markdown/src/pandoc.header -c http://johnmacfarlane.net/pandoc/demo/pandoc.css")
- '(session-use-package t nil (session))
- '(show-paren-mode t)
- '(tool-bar-mode nil))
+ '(package-selected-packages
+   (quote
+    (ac-dabbrev ac-html ac-js2 xterm-color eshell-z ace-jump-zap ace-window ace-jump-mode 2048-game typescript-mode yasnippet web-mode sqlplus session scala-mode2 markdown-mode js2-mode htmlize helm-projectile dash color-theme-solarized auto-complete)))
+ '(session-use-package t nil (session)))
+
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
