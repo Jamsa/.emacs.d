@@ -8,31 +8,13 @@
 (setenv "NLS_LANG" "SIMPLIFIED CHINESE_CHINA.UTF8")
 (setenv "TERM" "xterm-256color")
 
-;; initial window
-(setq initial-frame-alist
-      '(
-        (width . 102) ; character
-        (height . 45) ; lines
-        ))
-
-;; default/sebsequent window
-(setq default-frame-alist
-      '(
-        (width . 100) ; character
-        (height . 45) ; lines
-        ))
-
 ;; package系统
 (require 'package)
 (add-to-list 'package-archives '("marmalade"
 				 . "http://marmalade-repo.org/packages/")) ;包数量更多
 (add-to-list 'package-archives '("melpa"
 				 . "http://melpa.milkbox.net/packages/")) ;有大多数的包，每日更新
-;(add-to-list 'package-archives
-;             '("elpy" . "http://jorgenschaefer.github.io/packages/")) ;elpy环境
 (package-initialize)
-
-
 
 ;; smex
 ;;(require 'smex)
@@ -43,18 +25,19 @@
 (global-set-key (kbd "M-s-<right>") 'next-buffer)
 
 ;;ace
-(global-set-key (kbd "C-x o") 'ace-window)
+(global-set-key (kbd "C-x o") 'switch-window)
 (global-set-key (kbd "M-z") 'ace-jump-zap-to-char)
 (global-set-key (kbd "C-x j") 'ace-jump-word-mode)
-;;(global-set-key (kbd "C-x b") 'ace-jump-buffer)
-;;(global-set-key (kbd "C-s") 'isearch-forward)
 
-;helm-mode
+;; ido
+;(ido-mode nil)
+
+;;helm-mode
 (require 'helm-config)
 (helm-mode 1)
 (global-set-key (kbd "M-x") 'helm-M-x)
 (global-set-key (kbd "C-x C-f") 'helm-find-files) ;不能直接访问当前的目录
-;(global-set-key (kbd "C-x C-f") 'menu-find-file-existing)
+;;(global-set-key (kbd "C-x C-f") 'menu-find-file-existing)
 (global-set-key (kbd "C-x b") 'helm-mini)
 (global-set-key (kbd "C-x C-b") 'helm-buffers-list)
 (global-set-key (kbd "M-y") 'helm-show-kill-ring) ;剪贴板历史
@@ -64,19 +47,31 @@
       helm-split-window-in-side-p nil    ;在当前窗口内打开helm mini buffer
       helm-autoresize-mode t)
 
-;(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; 用tab代替C-j选中
-;(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; 在终端下使用C-i
-;(define-key helm-map (kbd "C-j")  'helm-select-action) ; 使用C-j显示Action列表
+;;(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; 用tab代替C-j选中
+;;(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; 在终端下使用C-i
+;;(define-key helm-map (kbd "C-j")  'helm-select-action) ; 使用C-j显示Action列表
 (define-key helm-map (kbd "S-SPC")      'helm-toggle-visible-mark)
-
+;;使用mdfind，而不是locate
+(setq helm-locate-command "mdfind -name %s %s") 
 
 ;; projectle
+(require 'projectile)
 (projectile-global-mode)
-(setq projectile-indexing-method 'native)
+;;(setq projectile-indexing-method 'native) emacs实现的索引方式，比较慢
+(setq projectile-indexing-method 'alien) ;使用外部工具find svn git等进行索引
 (setq projectile-enable-caching t)
+
 (setq projectile-completion-system 'helm)
 (helm-projectile-on) ;依赖于ack，mac上需要brew install ack
-(setq projectile-globally-ignored-files '("TAGS" "node_modules" "*.~undo-tree~" ".git" ".svn"))
+;; helm projectle ack grep等操作时忽略的文件和目录
+(add-to-list 'projectile-globally-ignored-files "*.~undo-tree~")
+(add-to-list 'projectile-globally-ignored-directories "node_modules")
+(add-to-list 'projectile-globally-ignored-directories "build")
+(add-to-list 'projectile-globally-ignored-directories "classes")
+(add-to-list 'projectile-globally-ignored-directories ".git")
+(add-to-list 'projectile-globally-ignored-directories ".svn")
+(add-to-list 'projectile-globally-ignored-directories ".idea")
+(add-to-list 'projectile-globally-ignored-directories ".gradle")
 
 ;; markdown-mode
 (require 'markdown-mode)
@@ -95,8 +90,10 @@
 (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
-;;(add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
+;(add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
+;(add-to-list 'auto-mode-alist '("\\.js\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.css\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.vue\\'" . web-mode))
 ;;(setq web-mode-markup-indent-offset 2)
 
 (setq web-mode-markup-indent-offset 4)
@@ -104,10 +101,26 @@
 (setq web-mode-code-indent-offset 4)
 (setq web-mode-indent-style 4)
 
-;;(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-jsx-mode))
+;; emmet
+(require 'emmet-mode)
+(add-hook 'web-mode-hook 'emmet-mode)
+
+;; js2-mode
+(require 'js2-mode)
 (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-jsx-mode))
+(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-jsx-mode))
+(add-to-list 'interpreter-mode-alist '("node" . js2-jsx-mode))
 (setq js-indent-level 2)
 (setq js2-basic-offset 2)
+;; jsx会显示错误
+(setq js2-mode-show-parse-errors nil)
+(setq js2-mode-show-strict-warnings nil)
+
+;; python
+;(setq jedi:environment-root  "default")
+;(setq python-environment-default-root-name "default")
+;(setq python-environment-directory "~/.virtualenvs")
+;(add-hook 'python-mode-hook 'jedi:setup)
 
 ;; yasnippet
 (require 'yasnippet)
@@ -117,13 +130,16 @@
 ;(global-set-key "\C-cay" 'yas-insert-snippet)
 
 ;; company
+(require 'company)
 (add-hook 'after-init-hook 'global-company-mode)
 (company-quickhelp-mode 1)
+(setq company-dabbrev-downcase nil)     ;防止自动把补全内容变成全小写
 (setq company-tooltip-limit 20)                      ; bigger popup window
 (setq company-tooltip-align-annotations 't)          ; align annotations to the right tooltip border
 (setq company-idle-delay .3)                         ; decrease delay before autocompletion popup shows
 (setq company-begin-commands '(self-insert-command)) ; start autocompletion only after typing
 
+(global-set-key (kbd "M-/") 'company-complete)
 (with-eval-after-load 'company
   (define-key company-active-map (kbd "M-n") nil)
   (define-key company-active-map (kbd "M-p") nil)
@@ -131,12 +147,16 @@
   (define-key company-active-map (kbd "C-p") #'company-select-previous))
 (require 'company-web-html)
 (require 'company-dict)
+(require 'company-tern)
 (push 'company-dict company-backends)
 (push 'company-web-html company-backends)
-;;(add-hook 'web-mode-hook (lambda ()
-;;                          (set (make-local-variable 'company-backends) '(company-web-html))
-;;                          (company-mode t)))
+(push 'company-tern company-backends)
+(load "~/.emacs.d/company-sqlplus.el")
+(push 'company-sqlplus company-backends)
+(push 'company-anaconda company-backends)
+(setq company-tooltip-align-annotations t)
 
+;; company与yas的配合
 (defvar company-mode/enable-yas t
   "Enable yasnippet for all backends.")
 (defun company-mode/backend-with-yas (backend)
@@ -146,9 +166,15 @@
             '(:with company-yasnippet))))
 (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
 
+;; company相关的hook
+(defun my/python-mode-hook ()
+  (add-to-list 'company-backends 'company-anaconda))
+(add-hook 'python-mode-hook 'anaconda-mode)
+(add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+(add-hook 'python-mode-hook 'my/python-mode-hook)
 
-;;python-mode
-(setq python-indent-offset 4)
+(add-hook 'js2-jsx-mode-hook 'tern-mode)
+
 
 ;; org-mode
 (require 'ox-html)
@@ -191,24 +217,14 @@
         ("blog" :components ("blog-notes","blog-static"))
         ))
 
-;; 其它设置
-(desktop-save-mode t)
-
-(require 'session)
-(add-hook 'after-init-hook 'session-initialize)
-
-;; theme
-(load-theme 'wombat t)
-;;(load-theme 'zenburn-theme t)
-
 ;;eshell
 (require 'eshell)
 (require 'eshell-z)
 ;; 256色显示
 (require 'xterm-color)
 ;; comint install
-;;(progn (add-hook 'comint-preoutput-filter-functions 'xterm-color-filter)
-;;       (setq comint-output-filter-functions (remove 'ansi-color-process-output comint-output-filter-functions)))
+(progn (add-hook 'comint-preoutput-filter-functions 'xterm-color-filter)
+       (setq comint-output-filter-functions (remove 'ansi-color-process-output comint-output-filter-functions)))
 ;; comint uninstall
 ;;(progn (remove-hook 'comint-preoutput-filter-functions 'xterm-color-filter)
 ;;       (add-to-list 'comint-output-filter-functions 'ansi-color-process-output))
@@ -218,10 +234,24 @@
 (add-to-list 'eshell-preoutput-filter-functions 'xterm-color-filter)
 (setq eshell-output-filter-functions (remove 'eshell-handle-ansi-color eshell-output-filter-functions))
 
+;; neotree
+(setq neo-smart-open t)
+(setq neo-show-auto-change-root t)
+(setq projectile-switch-project-action 'neotree-projectile-action)
 
-;(setq helm-locate-command "mdfind -name %s %s")
-;(setq helm-locate-fuzzy-match nil)
+;; initial window
+(setq initial-frame-alist
+      '(
+        (width . 102) ; character
+        (height . 45) ; lines
+        ))
 
+;; default/sebsequent window
+(setq default-frame-alist
+      '(
+        (width . 100) ; character
+        (height . 45) ; lines
+        ))
 
 ;; 全局设置
 ;; 字体
@@ -234,8 +264,18 @@
 (set-fontset-font "fontset-default" 'han '("STHeiti")) ;中文字体
 (setq face-font-rescale-alist '(("STHeiti" . 1.2)))    ;中文字体缩放，处理中英文等宽问题
 
+;; 新建Frame的默认字体
+(add-to-list 'default-frame-alist '(font . "Monaco 14"))
+
+;; desktop 
+(desktop-save-mode t)
+;; session
+(require 'session)
+(add-hook 'after-init-hook 'session-initialize)
+;; theme
+(load-theme 'wombat t)
 ;; 高亮当前行
-;(global-hl-line-mode 1)
+;;(global-hl-line-mode t)
 ;; 禁止产生备份
 (setq make-backup-files nil)
 ;; 关闭Emacs启动时提示信息
@@ -265,11 +305,16 @@
 (global-linum-mode 0)
 ;; shift-space 
 ;(global-set-key [?\S- ] 'set-mark-command)
-
 (setq tab-width 4)
 (setq-default indent-tabs-mode nil)
+;; 退出确认
+(setq confirm-kill-emacs 'yes-or-no-p)
 
+;; 启动server
 (server-start)
+
+;; edit-server
+;(edit-server-start)
 
 ;; source: http://steve.yegge.googlepages.com/my-dot-emacs-file
 (defun rename-file-and-buffer (new-name)
@@ -299,6 +344,22 @@
           (message "Deleted file %s" filename)
           (kill-buffer))))))
 
+(defun my-clone-and-open-file (filename)
+  "Clone the current buffer writing it into FILENAME and open it"
+  (interactive "FClone to file: ")
+  (save-restriction
+    (widen)
+    (write-region (point-min) (point-max) filename nil nil nil 'confirm))
+  (find-file filename))
+
+(defun my-backup-file (filename)
+  "Backup the current buffer writing it into FILENAME."
+  (interactive "FBackup to file: ")
+  (save-restriction
+    (widen)
+    (write-region (point-min) (point-max) filename nil nil nil 'confirm)))
+
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -308,7 +369,7 @@
    "pandoc -s --include-in-header=/Users/zhujie/Documents/devel/docs/markdown/src/pandoc.header -c http://johnmacfarlane.net/pandoc/demo/pandoc.css")
  '(package-selected-packages
    (quote
-    (company company-dict company-quickhelp company-web scala-mode xterm-color eshell-z ace-jump-zap ace-window ace-jump-mode 2048-game typescript-mode yasnippet web-mode sqlplus session markdown-mode js2-mode htmlize helm-projectile dash color-theme-solarized)))
+    (company-anaconda anaconda-mode edit-server magit emmet-mode company-tern helm-swoop switch-window company company-web company-quickhelp company-dict scala-mode xterm-color eshell-z ace-jump-zap ace-jump-mode 2048-game typescript-mode yasnippet web-mode sqlplus session markdown-mode js2-mode htmlize helm-projectile dash color-theme-solarized)))
  '(session-use-package t nil (session)))
 
 (custom-set-faces
