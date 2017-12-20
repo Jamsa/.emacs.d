@@ -10,10 +10,12 @@
 
 ;; package系统
 (require 'package)
-(add-to-list 'package-archives '("marmalade"
-				 . "http://marmalade-repo.org/packages/")) ;包数量更多
-(add-to-list 'package-archives '("melpa"
-				 . "http://melpa.milkbox.net/packages/")) ;有大多数的包，每日更新
+;(add-to-list 'package-archives '("marmalade"
+;				 . "http://marmalade-repo.org/packages/")) ;包数量更多
+;(add-to-list 'package-archives '("melpa"
+                                        ;				 . "http://melpa.milkbox.net/packages/")) ;有大多数的包，每日更新
+(setq package-archives '(("gnu"   . "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
+                         ("melpa" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")))
 (package-initialize)
 
 ;; smex
@@ -65,6 +67,7 @@
 (helm-projectile-on) ;依赖于ack，mac上需要brew install ack
 ;; helm projectle ack grep等操作时忽略的文件和目录
 (add-to-list 'projectile-globally-ignored-files "*.~undo-tree~")
+(add-to-list 'projectile-globally-ignored-files "*.DS_Store")
 (add-to-list 'projectile-globally-ignored-directories "node_modules")
 (add-to-list 'projectile-globally-ignored-directories "build")
 (add-to-list 'projectile-globally-ignored-directories "classes")
@@ -119,8 +122,12 @@
 ;; python
 ;(setq jedi:environment-root  "default")
 ;(setq python-environment-default-root-name "default")
+;(setq python-environment-default-root-name "deeplearn")
 ;(setq python-environment-directory "~/.virtualenvs")
 ;(add-hook 'python-mode-hook 'jedi:setup)
+
+(setq js-indent-level 2)
+(setq typescript-indent-level 2)
 
 ;; yasnippet
 (require 'yasnippet)
@@ -151,8 +158,8 @@
 (push 'company-dict company-backends)
 (push 'company-web-html company-backends)
 (push 'company-tern company-backends)
-(load "~/.emacs.d/company-sqlplus.el")
-(push 'company-sqlplus company-backends)
+;;(load "~/.emacs.d/company-sqlplus.el")
+;;(push 'company-sqlplus company-backends)
 (push 'company-anaconda company-backends)
 (setq company-tooltip-align-annotations t)
 
@@ -175,8 +182,19 @@
 
 (add-hook 'js2-jsx-mode-hook 'tern-mode)
 
+(eval-after-load "sql"
+  '(load-library "sql-indent"))
 
 ;; org-mode
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((dot . t)
+   (python . t)
+   (emacs-lisp . t)
+   (sh . t)))
+
+(setq org-src-fontify-natively t)
+
 (require 'ox-html)
 (add-hook 'org-mode-hook (lambda () (setq truncate-lines nil)))
 (setq org-export-html-coding-system 'utf-8-unix)
@@ -234,11 +252,6 @@
 (add-to-list 'eshell-preoutput-filter-functions 'xterm-color-filter)
 (setq eshell-output-filter-functions (remove 'eshell-handle-ansi-color eshell-output-filter-functions))
 
-;; neotree
-(setq neo-smart-open t)
-(setq neo-show-auto-change-root t)
-(setq projectile-switch-project-action 'neotree-projectile-action)
-
 ;; initial window
 (setq initial-frame-alist
       '(
@@ -273,15 +286,16 @@
 (require 'session)
 (add-hook 'after-init-hook 'session-initialize)
 ;; theme
-(load-theme 'wombat t)
+;(load-theme 'wombat t)
+(load-theme 'zenburn t)
 ;; 高亮当前行
-;;(global-hl-line-mode t)
+;; (global-hl-line-mode t)
 ;; 禁止产生备份
 (setq make-backup-files nil)
 ;; 关闭Emacs启动时提示信息
 (setq inhibit-startup-message t)
 ;; 启动语法高亮
-(global-font-lock-mode't)
+(global-font-lock-mode 't)
 ;; 关闭按TAB时发出的嘀嘀声,mac中开启后窗口中间出现黑框
 (setq visible-bell nil)
 ;; 关闭提示音
@@ -365,11 +379,14 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(ediff-diff-options "-w")
+ '(ediff-split-window-function (quote split-window-horizontally))
+ '(font-lock-maximum-decoration (quote ((sqlplus-mode . 1))))
  '(markdown-command
    "pandoc -s --include-in-header=/Users/zhujie/Documents/devel/docs/markdown/src/pandoc.header -c http://johnmacfarlane.net/pandoc/demo/pandoc.css")
  '(package-selected-packages
    (quote
-    (company-anaconda anaconda-mode edit-server magit emmet-mode company-tern helm-swoop switch-window company company-web company-quickhelp company-dict scala-mode xterm-color eshell-z ace-jump-zap ace-jump-mode 2048-game typescript-mode yasnippet web-mode sqlplus session markdown-mode js2-mode htmlize helm-projectile dash color-theme-solarized)))
+    (zenburn-theme ein multi-term sql-indent lua-mode company-anaconda anaconda-mode edit-server magit emmet-mode company-tern helm-swoop switch-window company company-web company-quickhelp company-dict scala-mode xterm-color eshell-z ace-jump-zap ace-jump-mode 2048-game typescript-mode yasnippet web-mode sqlplus session markdown-mode js2-mode htmlize helm-projectile dash color-theme-solarized)))
  '(session-use-package t nil (session)))
 
 (custom-set-faces
