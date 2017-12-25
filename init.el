@@ -125,6 +125,8 @@
 ;(setq python-environment-default-root-name "deeplearn")
 ;(setq python-environment-directory "~/.virtualenvs")
 ;(add-hook 'python-mode-hook 'jedi:setup)
+(add-hook 'python-mode-hook 'anaconda-mode)
+(add-hook 'python-mode-hook 'anaconda-eldoc-mode)
 
 (setq js-indent-level 2)
 (setq typescript-indent-level 2)
@@ -138,6 +140,13 @@
 
 ;; company
 (require 'company)
+(require 'company-web-html)
+(require 'company-dict)
+(require 'company-tern)
+(require 'company-files)
+(require 'company-keywords)
+(require 'company-capf)
+
 (add-hook 'after-init-hook 'global-company-mode)
 (company-quickhelp-mode 1)
 (setq company-dabbrev-downcase nil)     ;防止自动把补全内容变成全小写
@@ -152,36 +161,42 @@
   (define-key company-active-map (kbd "M-p") nil)
   (define-key company-active-map (kbd "C-n") #'company-select-next)
   (define-key company-active-map (kbd "C-p") #'company-select-previous))
-(require 'company-web-html)
-(require 'company-dict)
-(require 'company-tern)
-(push 'company-dict company-backends)
-(push 'company-web-html company-backends)
-(push 'company-tern company-backends)
-;;(load "~/.emacs.d/company-sqlplus.el")
-;;(push 'company-sqlplus company-backends)
-(push 'company-anaconda company-backends)
-(setq company-tooltip-align-annotations t)
 
-;; company与yas的配合
-(defvar company-mode/enable-yas t
-  "Enable yasnippet for all backends.")
-(defun company-mode/backend-with-yas (backend)
-  (if (or (not company-mode/enable-yas) (and (listp backend) (member 'company-yasnippet backend)))
-      backend
-    (append (if (consp backend) backend (list backend))
-            '(:with company-yasnippet))))
-(setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
+;; set default `company-backends'
+(setq company-backends
+      '((company-files          ; files & directory
+         company-keywords       ; keywords
+         company-capf
+         company-yasnippet
+         company-dict
+         )
+        (company-abbrev company-dabbrev)
+        ))
 
-;; company相关的hook
-(defun my/python-mode-hook ()
-  (add-to-list 'company-backends 'company-anaconda))
-(add-hook 'python-mode-hook 'anaconda-mode)
-(add-hook 'python-mode-hook 'anaconda-eldoc-mode)
-(add-hook 'python-mode-hook 'my/python-mode-hook)
+(add-hook 'python-mode-hook
+          (lambda ()
+            (add-to-list (make-local-variable 'company-backends)
+                         'company-anaconda)))
 
-(add-hook 'js2-jsx-mode-hook 'tern-mode)
+(add-hook 'web-mode-hook
+          (lambda ()
+            (add-to-list (make-local-variable 'company-backends)
+                         'company-web-html)))
 
+(dolist (hook '(js-mode-hook
+                js2-mode-hook
+                js2-jsx-mode-hook
+                ;js3-mode-hook
+                ;inferior-js-mode-hook
+                ))
+  (add-hook hook
+            (lambda ()
+              (tern-mode t)
+              (add-to-list (make-local-variable 'company-backends)
+                           'company-tern)
+              )))
+
+;; sql 缩进
 (eval-after-load "sql"
   '(load-library "sql-indent"))
 
