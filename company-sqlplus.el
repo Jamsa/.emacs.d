@@ -32,3 +32,10 @@
 ;; (when (featurep 'sqlplus)
 ;;   (advice-remove 'sqlplus-my-handler #'company-sqlplus-my-handler-advice)
 ;;   (advice-add 'sqlplus-my-handler :before #'company-sqlplus-my-handler-advice))
+
+(defvar company-sqlplus-parser-split-regexp "\\(^\\|\n\\|\s\\)?\\(select\\|from\\|where\\|order\\|connect\\|group\\|;\\)\\(^\\|\n\\|\s\\)" "进行sql解析时的正则表达式")
+
+(defun company-sqlplus-parse-sql(args)
+  "docstring"
+  (interactive "P")
+  )

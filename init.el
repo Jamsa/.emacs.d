@@ -1,3 +1,8 @@
+;;; init.el --- 配置文件
+
+;;; Commentary:
+
+;;; Code:
 ;; 添加/usr/local/bin至PATH
 (setenv "PATH" (concat "/usr/local/bin:" (getenv "PATH")))
 (setq exec-path (append '("/usr/local/bin") exec-path ))
@@ -7,6 +12,20 @@
 (setq exec-path (append '("/opt/oracle") exec-path ))
 (setenv "NLS_LANG" "SIMPLIFIED CHINESE_CHINA.UTF8")
 (setenv "TERM" "xterm-256color")
+
+
+;; go语言环境变量
+(setenv "GOPATH" (concat (getenv "HOME") "/Documents/devel/go"))
+(setenv "GOROOT" "/usr/local/opt/go/libexec")
+(setenv "GOBIN" (concat (getenv "GOPATH") "/bin"))
+(setenv "PATH" (concat (getenv "PATH") ":" (getenv "GOPATH") "/bin"))
+(setenv "PATH" (concat (getenv "PATH") ":" (getenv "GOROOT") "/bin"))
+
+;; rust 语言
+(setenv "PATH" (concat (getenv "PATH") ":" (getenv "HOME") "/.cargo/bin"))
+(setq exec-path (append '("~/.cargo/bin") exec-path ))
+(setenv "RUSTUP_DIST_SERVER" "http://mirrors.ustc.edu.cn/rust-static")
+(setenv "RUSTUP_UPDATE_ROOT" "http://mirrors.ustc.edu.cn/rust-static/rustup")
 
 ;; package系统
 (require 'package)
@@ -99,10 +118,10 @@
 (add-to-list 'auto-mode-alist '("\\.vue\\'" . web-mode))
 ;;(setq web-mode-markup-indent-offset 2)
 
-(setq web-mode-markup-indent-offset 4)
-(setq web-mode-css-indent-offset 4)
-(setq web-mode-code-indent-offset 4)
-(setq web-mode-indent-style 4)
+(setq web-mode-markup-indent-offset 2)
+(setq web-mode-css-indent-offset 2)
+(setq web-mode-code-indent-offset 2)
+(setq web-mode-indent-style 2)
 
 ;; emmet
 (require 'emmet-mode)
@@ -110,15 +129,58 @@
 
 ;; js2-mode
 (require 'js2-mode)
-(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-jsx-mode))
-(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-jsx-mode))
-(add-to-list 'interpreter-mode-alist '("node" . js2-jsx-mode))
+;; (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-jsx-mode))
+;; (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-jsx-mode))
+;; (add-to-list 'interpreter-mode-alist '("node" . js2-jsx-mode))
+(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+(add-to-list 'interpreter-mode-alist '("node" . js2-mode))
 (setq js-indent-level 2)
 (setq js2-basic-offset 2)
 ;; jsx会显示错误
 (setq js2-mode-show-parse-errors nil)
 (setq js2-mode-show-strict-warnings nil)
 
+(require 'flycheck)
+;; turn on flychecking globally
+(add-hook 'after-init-hook #'global-flycheck-mode)
+
+;; flycheck eslint
+(setq-default flycheck-disabled-checkers
+  (append flycheck-disabled-checkers
+    '(javascript-jshint)))
+
+;; use eslint with web-mode for jsx files
+;(flycheck-add-mode 'javascript-eslint 'web-mode)
+(flycheck-add-mode 'javascript-eslint 'js2-mode)
+;(flycheck-add-mode 'javascript-eslint 'js2-jsx-mode)
+
+;; customize flycheck temp file prefix
+(setq-default flycheck-temp-prefix ".flycheck")
+
+;; disable json-jsonlist checking for json files
+(setq-default flycheck-disabled-checkers
+  (append flycheck-disabled-checkers
+          '(json-jsonlist)))
+
+;; Java
+;; (require 'meghanada)
+;; (add-hook 'java-mode-hook
+;;           (lambda ()
+;;             ;; meghanada-mode on
+;;             (meghanada-mode t)
+;;             (flycheck-mode +1)
+;;             (setq c-basic-offset 2)
+;;             ;; use code format
+;;             (add-hook 'before-save-hook 'meghanada-code-beautify-before-save)))
+;; (cond
+;;    ((eq system-type 'windows-nt)
+;;     (setq meghanada-java-path (expand-file-name "bin/java.exe" (getenv "JAVA_HOME")))
+;;     (setq meghanada-maven-path "mvn.cmd"))
+;;    (t
+;;     (setq meghanada-java-path "java")
+;;     (setq meghanada-maven-path "mvn")))
+(global-pangu-spacing-mode 1)
 ;; python
 ;(setq jedi:environment-root  "default")
 ;(setq python-environment-default-root-name "default")
@@ -146,6 +208,7 @@
 (require 'company-files)
 (require 'company-keywords)
 (require 'company-capf)
+(require 'company-go)
 
 (add-hook 'after-init-hook 'global-company-mode)
 (company-quickhelp-mode 1)
@@ -178,10 +241,31 @@
             (add-to-list (make-local-variable 'company-backends)
                          'company-anaconda)))
 
+(add-hook 'go-mode-hook (lambda ()
+                          (set (make-local-variable 'company-backends) '(company-go))
+                          (company-mode)))
+
 (add-hook 'web-mode-hook
           (lambda ()
             (add-to-list (make-local-variable 'company-backends)
                          'company-web-html)))
+
+(add-hook 'rust-mode-hook 'cargo-minor-mode)
+(add-hook 'rust-mode-hook #'racer-mode)
+(add-hook 'racer-mode-hook #'eldoc-mode)
+(add-hook 'rust-mode-hook
+          (lambda ()
+            (add-to-list (make-local-variable 'company-backends)
+                         'company-racer)))
+
+(with-eval-after-load 'rust-mode
+  (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
+
+(setq ein:use-auto-complete nil)
+;; (add-hook 'ein:notebook-multilang-mode
+;;           (lambda ()
+;;             (add-to-list (make-local-variable 'company-backends)
+;;                          'ein:company-backend)))
 
 (dolist (hook '(js-mode-hook
                 js2-mode-hook
@@ -201,54 +285,55 @@
   '(load-library "sql-indent"))
 
 ;; org-mode
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((dot . t)
-   (python . t)
-   (emacs-lisp . t)
-   (sh . t)))
+;; (org-babel-do-load-languages
+;;  'org-babel-load-languages
+;;  '((dot . t)
+;;    (python . t)
+;;    (emacs-lisp . t)
+;;    ;(sh . t)
+;;    ))
 
-(setq org-src-fontify-natively t)
+;; (setq org-src-fontify-natively t)
 
-(require 'ox-html)
-(add-hook 'org-mode-hook (lambda () (setq truncate-lines nil)))
-(setq org-export-html-coding-system 'utf-8-unix)
-(setq org-html-viewport nil)
-(setq org-publish-project-alist
-      '(
-        ;; ... add all the components here (see below)...
-        ("blog-notes"
-         :base-directory "~/Documents/devel/docs/org/notes/" ;org文件的目录
-         :base-extension "org" ;扩展名
-         :publishing-directory "~/Documents/devel/docs/org/notes_html/" ;导出目录
-         :recursive t
-         :publishing-function org-html-publish-to-html
-         :headline-levels 4             ; Just the default for this project.
-         :auto-preamble t
-         :section-numbers nil
-         :author "zhujie"
-         :email "jamsa at gmail dot com"
-         :auto-sitemap t                ; Generate sitemap.org automagically...
-         :sitemap-filename "sitemap.org"  ; ... call it sitemap.org (it's the default)...
-         :sitemap-title "站点地图"         ; ... with title 'Sitemap'.
-         :sitemap-sort-files anti-chronologically
-         :sitemap-file-entry-format "%d [%t]"
-         ;:html-head "<link rel=\"stylesheet\" type=\"text/css\" href=\"http://orgmode.org/worg/style/worg.css\"/>"
-         :html-postamble nil            ;不产生底部明细信息
-         :html-head-include-default-style nil ;不在html内生成默认的样式内容
-         :html-validation-link nil            ;去掉valiation显示
-         :html-link-home "index.html"
-         :html-link-up "sitemap.html"
-         )
-        ("blog-static"
-         :base-directory "~/Documents/devel/docs/org/notes/"
-         :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
-         :publishing-directory "~/Documents/devel/docs/org/notes_html/"
-         :recursive t
-         :publishing-function org-publish-attachment
-         )
-        ("blog" :components ("blog-notes","blog-static"))
-        ))
+;; (require 'ox-html)
+;; (add-hook 'org-mode-hook (lambda () (setq truncate-lines nil)))
+;; (setq org-export-html-coding-system 'utf-8-unix)
+;; (setq org-html-viewport nil)
+;; (setq org-publish-project-alist
+;;       '(
+;;         ;; ... add all the components here (see below)...
+;;         ("blog-notes"
+;;          :base-directory "~/Documents/devel/docs/org/notes/" ;org文件的目录
+;;          :base-extension "org" ;扩展名
+;;          :publishing-directory "~/Documents/devel/docs/org/notes_html/" ;导出目录
+;;          :recursive t
+;;          :publishing-function org-html-publish-to-html
+;;          :headline-levels 4             ; Just the default for this project.
+;;          :auto-preamble t
+;;          :section-numbers nil
+;;          :author "zhujie"
+;;          :email "jamsa at gmail dot com"
+;;          :auto-sitemap t                ; Generate sitemap.org automagically...
+;;          :sitemap-filename "sitemap.org"  ; ... call it sitemap.org (it's the default)...
+;;          :sitemap-title "站点地图"         ; ... with title 'Sitemap'.
+;;          :sitemap-sort-files anti-chronologically
+;;          :sitemap-file-entry-format "%d [%t]"
+;;          ;:html-head "<link rel=\"stylesheet\" type=\"text/css\" href=\"http://orgmode.org/worg/style/worg.css\"/>"
+;;          :html-postamble nil            ;不产生底部明细信息
+;;          :html-head-include-default-style nil ;不在html内生成默认的样式内容
+;;          :html-validation-link nil            ;去掉valiation显示
+;;          :html-link-home "index.html"
+;;          :html-link-up "sitemap.html"
+;;          )
+;;         ("blog-static"
+;;          :base-directory "~/Documents/devel/docs/org/notes/"
+;;          :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
+;;          :publishing-directory "~/Documents/devel/docs/org/notes_html/"
+;;          :recursive t
+;;          :publishing-function org-publish-attachment
+;;          )
+;;         ("blog" :components ("blog-notes","blog-static"))
+;;         ))
 
 ;;eshell
 (require 'eshell)
@@ -288,7 +373,7 @@
 ;(set-fontset-font "fontset-default" 'han '("Microsoft YaHei" . "unicode-bmp"))
 
 ;(print (font-family-list))显示所有字体
-(set-default-font "Monaco 14")          ;默认字体和字号
+(set-frame-font "Monaco 14")          ;默认字体和字号
 (set-fontset-font "fontset-default" 'han '("STHeiti")) ;中文字体
 (setq face-font-rescale-alist '(("STHeiti" . 1.2)))    ;中文字体缩放，处理中英文等宽问题
 
@@ -331,7 +416,7 @@
 ;; 不显示滚动条
 (scroll-bar-mode -1)
 ;; 显示行号
-(global-linum-mode 0)
+(global-linum-mode 1)
 ;; shift-space 
 ;(global-set-key [?\S- ] 'set-mark-command)
 (setq tab-width 4)
@@ -394,6 +479,8 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(ange-ftp-ftp-program-name "ncftp")
+ '(company-go-gocode-command "/Users/zhujie/Documents/devel/go//bin/gocode")
  '(ediff-diff-options "-w")
  '(ediff-split-window-function (quote split-window-horizontally))
  '(font-lock-maximum-decoration (quote ((sqlplus-mode . 1))))
@@ -401,7 +488,8 @@
    "pandoc -s --include-in-header=/Users/zhujie/Documents/devel/docs/markdown/src/pandoc.header -c http://johnmacfarlane.net/pandoc/demo/pandoc.css")
  '(package-selected-packages
    (quote
-    (zenburn-theme ein multi-term sql-indent lua-mode company-anaconda anaconda-mode edit-server magit emmet-mode company-tern helm-swoop switch-window company company-web company-quickhelp company-dict scala-mode xterm-color eshell-z ace-jump-zap ace-jump-mode 2048-game typescript-mode yasnippet web-mode sqlplus session markdown-mode js2-mode htmlize helm-projectile dash color-theme-solarized)))
+    (yasnippet-snippets flycheck-rust epl racer company-racer cargo rust-mode dockerfile-mode plantuml-mode java-snippets groovy-mode gradle-mode flycheck company-go pangu-spacing zenburn-theme ein multi-term sql-indent lua-mode company-anaconda anaconda-mode edit-server magit emmet-mode company-tern helm-swoop switch-window company company-web company-quickhelp company-dict scala-mode xterm-color eshell-z ace-jump-zap ace-jump-mode 2048-game typescript-mode yasnippet web-mode sqlplus session markdown-mode js2-mode htmlize helm-projectile dash color-theme-solarized)))
+ '(plantuml-jar-path "/usr/local/Cellar/plantuml/1.2018.7/libexec/plantuml.jar")
  '(session-use-package t nil (session)))
 
 (custom-set-faces
