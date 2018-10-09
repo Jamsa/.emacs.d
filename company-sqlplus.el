@@ -59,30 +59,6 @@
 ;;   (advice-add 'sqlplus-my-handler :before #'company-sqlplus-my-handler-advice))
 
 ;; 重写
-(defun company-sqlplus--match-regexp (regexp)
-  (concat "\\(?:\s\\|\n\\|(\\)*"
-          regexp
-          "\\(?:\n\\|\s\\|.\\)+"))
-
-;;"\\(?:from\\|,\\)\\(?:\s\\|\n\\)+\\(\[a-zA-Z_0-9\]+\\)\\(?:\s\\|as\\)+cp2"
-;;\\(.\\|\n\\|s\\)*\\(?:from\\|,\\)\\(?:\s\\|\n\\)+\\(\[a-zA-Z_0-9\]+\\)\\(?:\s\\|as\\)+
-(defconst company-sqlplus--regexp-any ".*\\(?:\n.*\\)*")
-
-(defun company-sqlplus--from-alias-regexp (table-alias)
-   (concat company-sqlplus--regexp-any "\\(\s\\|^\\)" "\\(?:from\\|,\\)\\(?:\s\\|\n\\)+\\(\[a-zA-Z_0-9\]+\\)\\(?:\s\\|as\\)+" table-alias))
-
-(defun company-sqlplus--from-name-regexp (table-name)
-   (concat "\\(?:from\\|,\\)\\(?:\s\\|\n\\)+\\(" table-name "\\)\\(?:\s\\|as\\)+"))
-
-"\\(?:from\\|,\\)\\(?: \\|
-\\)+\\([a-zA-Z_0-9]+\\)\\(?: \\|as\\)+t"
-
-(defun company-sqlplus-looking-back ()
-  (interactive (list 'interactive))
-  (looking-at (company-sqlplus--from-alias-regexp "CP") 0))
-
-
-
 (defcustom company-sqlplus-backward-limit 2048
   "后向搜索光标位置信息的限制."
   :group 'company-sqlplus :type 'integer)
@@ -90,39 +66,6 @@
 (defun company-sqlplus-backward-min-bound ()
   (max (- (point) company-sqlplus-backward-limit)
        (point-min)))
-
-(defconst company-sqlplus-cursor-content-regexp
-  "\s"
-  "A regular expression matching input content before cursor.")
-
-;; (defun company-sqlplus--get-items (prefix)
-;;   (let* ((limit (company-sqlplus-backward-min-bound))
-;;          (bound (save-excursion
-;;                   (if (re-search-backward "\\(\s\\)" limit t)
-;;                       (point)
-;;                     limit)))
-;;          (grab-prefix (company-grab "\s\\(.+\\)" 1 bound))
-;;          (alias-and-field))
-;;     (cond
-;;      (grab-prefix
-;;       ;;(all-completions prefix demo-data)
-
-;;       (setq alias-and-field (split-string grab-prefix "\\."))
-;;       (prin1 (car alias-and-field))
-;;       (prin1 (company-sqlplus--from-alias-regexp (car alias-and-field)))
-;;       (cond
-;;        ((= (list-length alias-and-field) 2)
-;;         ;;(append '(("aaa2" "aaa")) (list (list (company-grab "\s\\(.+\\)" 1 bound) "aaaa" ) ) )
-;;         (if (looking-at (company-sqlplus--from-alias-regexp (car alias-and-field)) )
-;;             (list (list (match-data 1) "alias match"))))
-;;        ((= (list-length alias-and-field) 1)
-;;         (append '(("aaa1" "aaa")) (list (list (company-grab "\s\\(.+\\)" 1 bound) "aaaa" ) ) )
-;;         ;;(if (looking-at (company-sqlplus--from-alias-regexp (car alias-and-field)) )
-;;         ;;    (list (list (match-data 1) "alias match")))
-;;         )
-;;        )
-;;      ))))
-
 
 (defun company-sqlplus--get-items (prefix)
   (let* ((limit (company-sqlplus-backward-min-bound))
@@ -152,7 +95,7 @@
        )
      ))))
 
-(company-grab "from\s\\(.+\\)" 1)
+;(company-grab "from\s\\(.+\\)" 1)
 
 ;;"\\(?:\s\\|\n\\|(\\)*\\(?:select\\|update\\|insert\\|delete\\)\\(?:\n\\|\s\\|.\\)+"
 ;;"\\(?:\s\\|\n\\|(\\)*\\(?:select\\|update\\|insert\\|delete\\)\\(?:.\\|\n\\)*\s\\(.+[^\\(where\\|set)]\\)\s cp"
@@ -167,14 +110,15 @@
     (dolist (item items)
       (when (or t (string-prefix-p prefix (car item)))
         (push (company-sqlplus--make-candidate item) res)))
+    ;(prin1 res)
     res))
 
 
 (defun company-sqlplus--candidates-table (prefix)
-  (message (concat prefix "zzzzzzzzzzz"))
-  (company-sqlplus--candidates (concat '(("aaa" "aaa")) ))) ;(list (list prefix "aaa"))
-  ;(company-sqlplus--candidates (sqlplus-hidden-select sqlplus-connect-string "select * from user_tables where rownum<20")))
+  (company-sqlplus--candidates (append '(("aaa" "aaa") ("bbb" "bbb")) (list (list prefix "aaa")) )) );
+                                        ;(company-sqlplus--candidates (sqlplus-hidden-select sqlplus-connect-string "select * from user_tables where rownum<20")))
 
+;;(company-grab "\\_<from\\_>\\(?:\s\\|,\\)\\_<\\(.*\\)?" 1)
 
 (defun company-sqlplus--annotation (candidate)
   (format " (%s)" (get-text-property 0 'meta candidate)))
@@ -183,21 +127,21 @@
   (format "This will use %s of %s"
           (get-text-property 0 'meta candidate)
           (substring-no-properties candidate)))
-;(company-grab "from\s\\(.+\\)" 1)
+
 ;;;###autoload
 (defun company-sqlplus (command &optional arg &rest ignored)
   "`company-mode' completion back-end for `sqlplus-mode'."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-sqlplus))
-    (prefix (progn (message "aaaaaa") (company-grab "from\s\\(.+\\)" 1 200)))
+    (prefix  (company-grab "from\s\\(.+\\)" 1 200))
     ;(prefix (company-grab-symbol-cons "\\.\\|-" 20))
     (candidates
      ;(cond
       ;((company-grab "from\s\\(.+\\)" 1 200)
        (company-sqlplus--candidates-table arg))
      ; )
-     )
+     ;)
     (annotation (company-sqlplus--annotation arg))
     (meta (company-sqlplus--meta arg))))
 
@@ -212,3 +156,26 @@
 
 (provide 'company-sqlplus)
 ;;; company-sqlplus.el ends here
+
+
+(setq zj-test-rexp
+      (rx (and symbol-start             ;关键字开始
+               "from"                   ;关键字
+               symbol-end               ;关键字结束
+               (* anything) (not (in "\.")) (* anything)
+               ;(not (any "\\."))
+               (group (and symbol-start ;匹配内容
+                           (* anything)
+                           ;;(not (in "\."))
+                           (not (in "\s,")))))))
+
+(setq zj-select-rexp
+      (rx (and symbol-start
+               "from"
+               symbol-end
+               (* anything) (not (in "\.")) (* anything)
+               ;(not (any "\\."))
+               (group (and symbol-start
+                           (* anything)
+                           ;;(not (in "\."))
+                           (not (in "\s,")))))))
