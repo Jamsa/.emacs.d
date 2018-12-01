@@ -1,6 +1,5 @@
 (require 'flycheck)
-(require 'js2-mode)
-(require 'web-mode)
+
 
 ;; turn on flychecking globally
 (add-hook 'after-init-hook #'global-flycheck-mode)
@@ -11,8 +10,10 @@
     '(javascript-jshint)))
 
 ;; use eslint with web-mode for jsx files
-;(flycheck-add-mode 'javascript-eslint 'web-mode)
-(flycheck-add-mode 'javascript-eslint 'js2-mode)
+(with-eval-after-load 'web-mode
+  (flycheck-add-mode 'javascript-eslint 'web-mode))
+(with-eval-after-load 'js2-mode
+  (flycheck-add-mode 'javascript-eslint 'js2-mode))
 ;(flycheck-add-mode 'javascript-eslint 'js2-jsx-mode)
 
 ;; customize flycheck temp file prefix

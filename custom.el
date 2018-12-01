@@ -12,7 +12,7 @@
    "pandoc -s --include-in-header=/Users/zhujie/Documents/devel/docs/markdown/src/pandoc.header -c http://johnmacfarlane.net/pandoc/demo/pandoc.css")
  '(package-selected-packages
    (quote
-    (exec-path-from-shell yasnippet-snippets flycheck-rust epl racer company-racer cargo rust-mode dockerfile-mode plantuml-mode java-snippets groovy-mode gradle-mode flycheck company-go pangu-spacing zenburn-theme ein multi-term sql-indent lua-mode company-anaconda anaconda-mode edit-server magit emmet-mode company-tern helm-swoop switch-window company company-web company-quickhelp company-dict scala-mode xterm-color eshell-z ace-jump-zap ace-jump-mode 2048-game typescript-mode yasnippet web-mode sqlplus session markdown-mode js2-mode htmlize helm-projectile dash color-theme-solarized)))
+    (helm-gtags helm-ag exec-path-from-shell yasnippet-snippets flycheck-rust epl racer company-racer cargo rust-mode dockerfile-mode plantuml-mode java-snippets groovy-mode gradle-mode flycheck company-go pangu-spacing zenburn-theme ein multi-term sql-indent lua-mode company-anaconda anaconda-mode edit-server magit emmet-mode company-tern helm-swoop switch-window company company-web company-quickhelp company-dict scala-mode xterm-color eshell-z ace-jump-zap ace-jump-mode 2048-game typescript-mode yasnippet web-mode sqlplus session markdown-mode js2-mode htmlize helm-projectile dash color-theme-solarized)))
  '(plantuml-jar-path "/usr/local/Cellar/plantuml/1.2018.7/libexec/plantuml.jar")
  '(session-use-package t nil (session)))
 

@@ -1,5 +1,6 @@
 ;;helm-mode
 (require 'helm-config)
+
 (helm-mode 1)
 (global-set-key (kbd "M-x") 'helm-M-x)
 (global-set-key (kbd "C-x C-f") 'helm-find-files) ;不能直接访问当前的目录
@@ -18,6 +19,11 @@
 ;;(define-key helm-map (kbd "C-j")  'helm-select-action) ; 使用C-j显示Action列表
 (define-key helm-map (kbd "S-SPC")      'helm-toggle-visible-mark)
 ;;使用mdfind，而不是locate
-(setq helm-locate-command "mdfind -name %s %s") 
+(setq helm-locate-command "mdfind -name %s %s")
+
+(with-eval-after-load 'projectile
+  (setq projectile-completion-system 'helm)
+  (helm-projectile-on) ;依赖于ack，mac上需要brew install ack
+)
 
 (provide 'init-helm)

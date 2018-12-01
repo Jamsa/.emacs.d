@@ -8,7 +8,8 @@
 
 
 ;; 参考purcell方式进行配置
-(setq debug-on-error t)
+;;(setq debug-on-error t)
+(setq debug-on-error nil)
 
 (let ((minver "24.4"))
   (when (version< emacs-version minver)
@@ -43,7 +44,7 @@
 
 (require 'init-markdown)
 (require 'init-web)
-(require 'init-js2)
+;(require 'init-js2)
 (require 'init-flycheck)
 ;(require 'init-java)
 (require 'init-python)
@@ -119,7 +120,8 @@
 ;; 不显示滚动条
 (scroll-bar-mode -1)
 ;; 显示行号
-(global-linum-mode 1)
+;(global-linum-mode 1)
+(global-display-line-numbers-mode 1)
 ;; shift-space 
 ;(global-set-key [?\S- ] 'set-mark-command)
 (setq tab-width 4)
@@ -137,3 +139,7 @@
 
 (when (file-exists-p custom-file)
   (load custom-file))
+
+(provide 'init)
+;;; init.el ends here
+

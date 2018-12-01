@@ -1,13 +1,13 @@
-
 ;; company
+
 (require 'company)
-(require 'company-web-html)
+;(require 'company-web-html)
 (require 'company-dict)
-(require 'company-tern)
+;(require 'company-tern)
 (require 'company-files)
 (require 'company-keywords)
 (require 'company-capf)
-(require 'company-go)
+
 
 (add-hook 'after-init-hook 'global-company-mode)
 (company-quickhelp-mode 1)
@@ -25,12 +25,25 @@
   (define-key company-active-map (kbd "C-p") #'company-select-previous))
 
 ;; set default `company-backends'
+;; (setq company-backends
+;;       '((company-files          ; files & directory
+;;          company-keywords       ; keywords
+;;          company-capf
+;;          company-yasnippet
+;;          company-dict)
+;;         (company-abbrev company-dabbrev)))
+
 (setq company-backends
-      '((company-files          ; files & directory
-         company-keywords       ; keywords
-         company-capf
-         company-yasnippet
-         company-dict)
-        (company-abbrev company-dabbrev)))
+      '(company-bbdb
+        ;;company-eclim
+        ;;company-semantic
+        ;;company-clang
+        ;;company-xcode
+        ;;company-cmake
+        company-capf
+        company-files
+        (company-yasnippet company-dabbrev-code company-gtags company-etags company-keywords)
+        company-oddmuse
+        company-dabbrev))
 
 (provide 'init-company)

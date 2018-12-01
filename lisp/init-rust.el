@@ -7,12 +7,14 @@
 (add-hook 'rust-mode-hook 'cargo-minor-mode)
 (add-hook 'rust-mode-hook #'racer-mode)
 (add-hook 'racer-mode-hook #'eldoc-mode)
-(add-hook 'rust-mode-hook
-          (lambda ()
-            (add-to-list (make-local-variable 'company-backends)
-                         'company-racer)))
 
-(with-eval-after-load 'rust-mode
+(with-eval-after-load 'company-mode
+  (add-hook 'rust-mode-hook
+            (lambda ()
+              (add-to-list (make-local-variable 'company-backends)
+                           'company-racer))))
+
+(with-eval-after-load 'flycheck-mode;'rust-mode
   (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
 
 (provide 'init-rust)
