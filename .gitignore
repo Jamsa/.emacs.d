@@ -15,4 +15,5 @@ recentf
 bookmarks
 anaconda-mode
 request
-server    
+server
+.tern-port

@@ -1,5 +1,6 @@
 ; web-mode
 (require 'web-mode)
+(require 'add-node-modules-path)
 (add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.htm\\'" . web-mode))
@@ -11,6 +12,8 @@
 (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
 ;(add-to-list 'auto-mode-alist '("\\.jsx\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.js\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.jsm?\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.json\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.css\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.vue\\'" . web-mode))
 ;;(setq web-mode-markup-indent-offset 2)
@@ -33,10 +36,11 @@
             (setq web-mode-script-padding 0)
             (setq web-mode-style-padding 0)
             ;;(if (equal web-mode-content-type '("html")))
-            (if (equal web-mode-content-type '("vue"))
-                (progn (flycheck-add-mode 'javascript-eslint 'web-mode)
-                       (flycheck-select-checker 'javascript-eslint)))
-            ))
+            (if (equal web-mode-content-type "vue")
+                (progn
+                  (add-node-modules-path) ;查找项目目录下的eslint
+                  (flycheck-add-mode 'javascript-eslint 'web-mode)
+                  (flycheck-select-checker 'javascript-eslint)))))
 
 ;; (add-hook 'web-mode-hook
 ;;           (lambda ()

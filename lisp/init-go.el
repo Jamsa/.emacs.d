@@ -4,7 +4,14 @@
   (setenv "GOROOT" "/usr/local/opt/go/libexec")
   (setenv "GOBIN" (concat (getenv "GOPATH") "/bin"))
   (setenv "PATH" (concat (getenv "PATH") ":" (getenv "GOPATH") "/bin"))
-  (setenv "PATH" (concat (getenv "PATH") ":" (getenv "GOROOT") "/bin")))
+  (setenv "PATH" (concat (getenv "PATH") ":" (getenv "GOROOT") "/bin"))
+  (setq exec-path (append (list (concat (getenv "GOPATH") "/bin")) exec-path ))
+  (setq exec-path (append (list (concat (getenv "GOROOT") "/bin")) exec-path )))
+
+;; 修复go vet错误 https://github.com/flycheck/flycheck/issues/1523
+(let ((govet (flycheck-checker-get 'go-vet 'command)))
+  (when (equal (cadr govet) "tool")
+    (setf (cdr govet) (cddr govet))))
 
 (with-eval-after-load 'company
   (require 'company-go)

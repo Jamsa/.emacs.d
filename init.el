@@ -56,6 +56,8 @@
 (require 'init-ein)
 (require 'init-utils)
 
+
+
 (when *is-a-win*
    (prefer-coding-system 'utf-8)
     (set-default-coding-systems 'utf-8)
@@ -110,7 +112,7 @@
 (column-number-mode t)
 ;; 显示匹配的括号
 (show-paren-mode t)
-(setq show-paren-style 'parentheses)
+(setq show-paren-style 'parentheses)    ;parenthesis
 ;; 高亮选区
 ;(transient-mark-mode t)
 ;; 用y/n代替yes/no
