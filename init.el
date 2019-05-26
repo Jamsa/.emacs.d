@@ -136,6 +136,9 @@
 ;; 启动server
 (server-start)
 
+;; gpg密码提示
+(setq epa-pinentry-mode 'loopback)
+
 ;; edit-server
 ;(edit-server-start)
 
